@@ -1,5 +1,7 @@
 fn main() {
-    println!("Hello, world!");
+    let m = 108;
+    let n = 210;
+    println!("GCD of {} and {} is {}", m, n, gcd(m, n));
 }
 
 fn gcd(mut n: u64, mut m: u64) -> u64 {
