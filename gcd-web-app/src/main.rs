@@ -1,30 +1,36 @@
 use std::str::FromStr;
-use std::env;
+use actix_web::{web, App, HttpResponse, HttpServer};
 
 fn main() {
-    let m = 108;
-    let n = 210;
-    println!("GCD of {} and {} is {}", m, n, gcd(m, n));
+    let port_number = "5555";
+    let host_addr = "localhost";
 
-    let mut numbers = Vec::new();
+    let server = HttpServer::new(|| {
+        App::new().
+        route("/", web::get().to(get_index))
+    });
 
-    for arg in env::args().skip(1) {
-        numbers.push(u64::from_str(&arg)
-        .expect("error parsing arguments"));
-    }
-
-    if numbers.len() == 0 {
-        eprintln!("Usage: gcd NUMBER ...");
-        std::process::exit(1);
-    }
-
-    let mut d = numbers[0];
-    for m in &numbers[1..] {
-        d = gcd(d, *m);
-    }
-
-    println!("GCD of {:?} is {}", numbers, d);
+    println!("Running web-server on http://localhost:{}", port_number);
+    server
+        .bind(format!("{}:{}",host_addr, port_number)).expect("error binding server to address")
+        .run().expect("error running the server");
 }
+
+fn get_index() -> HttpResponse {
+    HttpResponse::Ok()
+        .content_type("text/html")
+        .body(
+            r#"
+                <title> GCD Calculator </title>
+                <form action="gcd" method="post">
+                <input type="text" name="m">
+                <input type="text" name="n">
+                <button type="submit">Compute GCD</button>
+                </form>
+            "#,
+        )
+}
+
 
 fn gcd(mut n: u64, mut m: u64) -> u64 {
     assert!( n != 0 && m != 0);
