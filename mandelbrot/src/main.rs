@@ -58,3 +58,34 @@ fn escape_time(c: Complex<f64>, limit: usize) -> Option<usize> {
     }
     None
 }
+
+/// Given the row and column of a pixel in the output image,
+/// return the corresponding point on the complex plane.
+///
+/// `bounds` is a pair giving the width and height of the image in pixels.
+/// `pixel` is a (column, row) pair indicating a particular pixel in the image.
+/// The `top_left` and `bot_right` parameters are points on the complex plane
+/// designating the area our image covers
+fn pixel_to_point(bounds: (usize, usize),
+                pixel: (usize, usize),
+                top_left: Complex<f64>,
+                bot_right: Complex<f64>)
+    -> Complex<f64>
+{
+    let (width, height) = (bot_right.re - top_left.re,
+                            top_left.im - bot_right.im);
+    Complex {
+        re: top_left.re + pixel.0 as f64 * width / bounds.0 as f64,
+        im: top_left.im - pixel.1 as f64 * height / bounds.1 as f64
+        // pixel.1 increases as we go down but the
+        // imaginary component increases as we go up
+    }
+}
+
+#[test]
+fn test_pixel_to_point() {
+    assert_eq!(pixel_to_point((100,100), (25, 75),
+                            Complex {re: -1.0, im: 1.0},
+                            Complex {re: 1.0, im: -1.0}),
+                    Complex {re: -0.5, im: -0.5});
+}
