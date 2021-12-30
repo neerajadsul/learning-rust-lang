@@ -1,7 +1,31 @@
 use num::Complex;
 use std::str::FromStr;
+use std::env;
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() != 5 {
+        eprintln!("Usage: {} FILE PIXELS TOP-LEFT BOTTOM-RIGHT", args[0]);
+        eprintln!("Example: {} mandel.png 1000x750 -1.20,0.35 -1,0.20", args[0]);
+        std::process::exit(1);
+    }
+
+    let fname = &args[1];
+    let bounds = parse_pair(&args[2], 'x')
+        .expect("Error parxing image dimensions");
+    let top_left = parse_complex(&args[3])
+        .expect("Error parsing top left corner point.");
+    let bot_right = parse_complex(&args[4])
+        .expect("Error parsing bottom right corner point");
+
+    let mut pixels = vec![0; bounds.0 * bounds.1];
+
+    render(&mut pixels, bounds, top_left, bot_right);
+
+    write_image(fname, &pixels, bounds)
+        .expect("Error writing PNG File");
+
 }
 
 /// Parse the string `s` as a coordinate pair, like 400x600 or 1.0,0.5
