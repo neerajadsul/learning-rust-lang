@@ -30,6 +30,18 @@ fn test_parse_pair() {
     assert_eq!(parse_pair::<f64>("0.5x1.5", 'x'), Some((0.5, 1.5)));
 }
 
+/// Parse a pair of floating point numbers separated by a comma as a complex number.
+fn parse_complex(s: &str) -> Option<Complex<f64>> {
+    match parse_pair(s, ',') {
+        Some((re, im)) => Some(Complex {re, im}),
+        None => None
+    }
+}
+#[test]
+fn test_parse_complex() {
+    assert_eq!(parse_complex("1.25,-0.0425"), Some(Complex {re: 1.25, im: -0.0425}));
+    assert_eq!(parse_complex(",-0.01"), None);
+}
 /// Check if `c` is in the Mandelbrot set, using at most `limit` iterations.
 ///
 /// If `c` is not a member, return Some(i), where `i` is the number of iterations it took
