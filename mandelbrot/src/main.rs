@@ -1,6 +1,7 @@
 use num::Complex;
 use std::str::FromStr;
 use std::env;
+use crossbeam;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -20,6 +21,29 @@ fn main() {
         .expect("Error parsing bottom right corner point");
 
     let mut pixels = vec![0; bounds.0 * bounds.1];
+
+    let threads = 8;
+    let rows_per_band = bounds.1 / threads + 1;
+
+    {
+        let bands: Vec<&mut [u8]> =
+            pixels.chunks_mut(rows_per_band * bounds.0).collect();
+        crossbeam::scope(|spawner| {
+            for (i, band) in bands.into_iter().enumerate() {
+                let top = rows_per_band * i;
+                let height = band.len() / bounds.0;
+                let band_bounds = (bounds.0, height);
+                let band_top_left =
+                    pixel_to_point(bounds, (0, top), top_left, bot_right);
+                let band_bot_right =
+                    pixel_to_point(bounds, (bounds.0, top + height), top_left, bot_right);
+
+                spawner.spawn(move |_| {
+                    render(band, band_bounds, band_top_left, band_bot_right);
+                });
+            }
+        }).unwrap();
+    }
 
     render(&mut pixels, bounds, top_left, bot_right);
 
