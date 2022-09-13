@@ -6,9 +6,9 @@ use crossbeam;
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    if args.len() != 5 {
-        eprintln!("Usage: {} FILE PIXELS TOP-LEFT BOTTOM-RIGHT", args[0]);
-        eprintln!("Example: {} mandel.png 1000x750 -1.20,0.35 -1,0.20", args[0]);
+    if args.len() != 6 {
+        eprintln!("Usage: {} FILE PIXELS TOP-LEFT BOTTOM-RIGHT NUM_THREADS ", args[0]);
+        eprintln!("Example: {} mandel.png 1000x750 -1.20,0.35 -1,0.20 8", args[0]);
         std::process::exit(1);
     }
 
@@ -19,10 +19,20 @@ fn main() {
         .expect("Error parsing top left corner point.");
     let bot_right = parse_complex(&args[4])
         .expect("Error parsing bottom right corner point");
+    let num = &args[5];
+    let num_threads:usize = match num.parse() {
+        Ok(n) => {
+            n
+        },
+        Err(_) => {
+            eprintln!("error: last argument is not integer");
+            return;
+        },
+    };
 
     let mut pixels = vec![0; bounds.0 * bounds.1];
 
-    let threads = 8;
+    let threads = num_threads;
     let rows_per_band = bounds.1 / threads + 1;
 
     {
