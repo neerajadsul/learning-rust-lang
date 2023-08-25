@@ -53,8 +53,8 @@ slint::slint! {
 
      } 
     export component MainWindow inherits Window {
-        width: 296px;
-        height: 148px;
+        width: 374px;
+        height: 374px;
 
         in property <[TileData]> memory_tiles: [
             {image: @image-url("icons/bicycle.png")},
@@ -84,6 +84,22 @@ slint::slint! {
 }
 
 fn main() {
-    MainWindow::new().unwrap().run().unwrap();
+    use slint::Model;
+
+    let main_window = MainWindow::new().unwrap();
+
+    // Fetch the tiles from the model above in .slint macros
+    let mut tiles: Vec<TileData> = main_window.get_memory_tiles().iter().collect();
+    // Duplicating the tiles to create pairs
+    tiles.extend(tiles.clone());
+
+    use rand::seq::SliceRandom;
+    let mut rng = rand::thread_rng();
+    tiles.shuffle(&mut rng);
+
+    let tiles_model = std::rc::Rc::new(slint::VecModel::from(tiles));
+    main_window.set_memory_tiles(tiles_model.into());
+
+    main_window.run().unwrap();
 }
 
